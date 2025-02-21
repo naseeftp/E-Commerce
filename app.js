@@ -8,6 +8,7 @@ const db=require("./config/db")
 const userRouter=require("./routes/userRouter");
 const adminRouter=require('./routes/adminRouter');
 const nocache = require('nocache')
+const User=require("./models/userSchema")
 db()
 
 
@@ -45,6 +46,22 @@ app.use('/uploads', express.static('public/uploads'));
 
 app.use("/",userRouter)
 app.use("/admin",adminRouter)
+
+app.use(async (req, res, next) => {
+    try {
+        if (req.session.user) {
+            const user = await User.findById(req.session.user);
+            if (user && user.isBlocked) {
+                delete req.session.user;
+                return res.redirect('/login');
+            }
+        }
+        next();
+    } catch (error) {
+        console.error("Error checking blocked user:", error);
+        res.status(500).send('Server Error');
+    }
+  });
 
 app.listen(process.env.PORT,()=>{
     console.log("server running")
