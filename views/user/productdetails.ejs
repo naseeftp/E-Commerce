@@ -1,0 +1,254 @@
+<%- include("../../views/partials/user/header") %>
+
+<style>
+/* General Styles */
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f4f4f4;
+    margin: 0;
+    padding: 0;
+    color: #333;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 15px;
+}
+
+/* Image Gallery */
+.detail-gallery {
+    position: relative;
+    text-align: center;
+}
+
+.product-image-container {
+    position: relative;
+    display: inline-block;
+    overflow: hidden;
+}
+
+.product-image-container img {
+    width: 100%;
+    max-width: 400px;
+    border-radius: 10px;
+    transition: transform 0.3s ease;
+}
+
+/* Magnifier Lens */
+.magnifier {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    border: 2px solid #007bff;
+    background-repeat: no-repeat;
+    background-size: 800px 800px;
+    display: none;
+    pointer-events: none;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Thumbnails */
+.slider-nav-thumbnails {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
+.slider-nav-thumbnails img {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s;
+}
+
+.slider-nav-thumbnails img:hover {
+    border-color: #007bff;
+}
+
+.size-selector {
+    margin-bottom: 20px;
+}
+
+
+.size-selector p {
+    font-size: 16px;
+    margin-bottom: 10px;
+    font-weight: 500;
+}
+
+
+.page-header {
+    background-color: #f8f8f8;
+    padding: 15px 0;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.breadcrumb a {
+    text-decoration: none;
+    color: #007bff;
+    transition: color 0.3s ease;
+}
+
+.breadcrumb a:hover {
+    color: #0056b3;
+}
+
+.breadcrumb .breadcrumb-separator {
+    margin: 0 8px;
+    color: #ccc;
+}
+
+.breadcrumb .breadcrumb-current {
+    color: #333;
+    font-weight: bold;
+}
+
+.breadcrumb-link {
+    font-size: 14px;
+}
+
+.breadcrumb-separator {
+    font-size: 18px;
+    font-weight: bold;
+    color: #007bff;
+}
+
+.breadcrumb-current {
+    font-size: 14px;
+    font-weight: normal;
+    color: #333;
+}
+
+.page-header .container {
+    padding: 10px 0;
+}
+
+</style>
+
+<main class="main">
+    <div class="page-header breadcrumb-wrap">
+        <div class="container">
+            <div class="breadcrumb">
+                <a href="/" class="breadcrumb-link" rel="nofollow">Home</a>
+                <span class="breadcrumb-separator">></span>
+                <a href="/shop" class="breadcrumb-link">shop</a>
+                <span class="breadcrumb-separator">></span>
+                <span class="breadcrumb-current">Product Details </span>
+            </div>
+        </div>
+    </div>
+    <section class="mt-50 mb-50">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-9">
+                    <div class="product-detail">
+                        <div class="row mb-50">
+                            <div class="col-md-6">
+                                <div class="detail-gallery">
+                                    <div class="product-image-container" id="product-image-container">
+                                        <img id="main-product-image" src="/uploads/re-image/<%= product.productImage[0] %>" alt="product image">
+                                        <div id="magnifier" class="magnifier"></div>
+                                    </div>
+                                    <div class="slider-nav-thumbnails">
+                                        <% for (let i = 0; i < product.productImage.length; i++) { %>
+                                            <img class="thumbnail" src="/uploads/re-image/<%= product.productImage[i] %>" alt="thumbnail" data-src="/uploads/re-image/<%= product.productImage[i] %>">
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                            
+
+                            <div class="col-md-6">
+                                <div class="detail-info">
+                                     <%= product.productName %>
+                                    <div class="product-price">
+                                   <ins><span class="text-brand">₹<%= product.salePrice %></span></ins>
+
+                                    </div>
+                                    <p><%= product.description %></p>
+                                    <div class="size-selector">
+                                        <p>Select Size:</p>
+                                        <button class="size-button" data-size="S">S</button>
+                                        <button class="size-button" data-size="M">M</button>
+                                        <button class="size-button" data-size="L">L</button>
+                                        <button class="size-button" data-size="XL">XL</button>
+                                    </div>
+                                  
+                                    
+                                    <button class="button-add-to-cart" style="background-color:red;  color: white;">Add to Cart</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const productImage = document.getElementById("main-product-image");
+    const magnifier = document.getElementById("magnifier");
+    const productImageContainer = document.getElementById("product-image-container");
+
+    productImageContainer.addEventListener("mousemove", function (e) {
+        const { left, top, width, height } = productImageContainer.getBoundingClientRect();
+        const mouseX = e.clientX - left;
+        const mouseY = e.clientY - top;
+
+
+        magnifier.style.display = "block";
+        magnifier.style.left = `${mouseX - 75}px`;
+        magnifier.style.top = `${mouseY - 75}px`;
+
+        const backgroundPosX = (mouseX / width) * 100;
+        const backgroundPosY = (mouseY / height) * 100;
+        magnifier.style.backgroundPosition = `${backgroundPosX}% ${backgroundPosY}%`;
+    });
+
+    productImageContainer.addEventListener("mouseleave", function () {
+        magnifier.style.display = "none";
+    });
+
+ 
+    function updateMagnifierImage(imageSrc) {
+        magnifier.style.backgroundImage = `url('${imageSrc}')`;
+    }
+
+    updateMagnifierImage(productImage.src);
+
+  
+    document.querySelectorAll(".thumbnail").forEach(thumbnail => {
+        thumbnail.addEventListener("click", function () {
+            const newImageSrc = this.getAttribute("data-src");
+            productImage.src = newImageSrc;
+            updateMagnifierImage(newImageSrc);
+        });
+    });
+});
+</script>
+
+<%- include("../../views/partials/user/footer") %>
+
+
+
+
+
