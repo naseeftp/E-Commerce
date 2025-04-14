@@ -43,5 +43,5 @@ expireOn:{
 
 })
 
-const Coupon=mongoose.model("Coupen",couponSchema);
+const Coupon=mongoose.model("Coupon",couponSchema);
 module.exports=Coupon

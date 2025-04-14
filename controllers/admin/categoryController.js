@@ -1,6 +1,7 @@
 const Category=require("../../models/categorySchema")
 
 
+
 const categoryInfo=async (req,res)=>{
 try {
     const page=parseInt(req.query.page)||1;
@@ -24,31 +25,29 @@ try {
 }
 }
 
-
-
 const addCategory = async (req, res) => {
     const { name, description } = req.body;
     try {
       
-      const existingCategory = await Category.findOne({ name });
+      const existingCategory = await Category.findOne({ name: { $regex: `^${name}$`, $options: 'i' } });
+
       if (existingCategory) {
         return res.status(400).json({ error: "Category already exists" });
       }
   
-      // Create new category
       const newCategory = new Category({
         name,
         description
       });
       await newCategory.save();
   
-      // Return success response
       return res.json({ message: "Category added successfully" });
     } catch (error) {
       console.error("Error adding category:", error);
       return res.status(500).json({ error: "Internal server error" });
     }
   };
+
 const getListCategory=async(req,res)=>{
 try {
   let id=req.query.id;
@@ -84,37 +83,52 @@ const getUnlistCategory=async(req,res)=>{
     
     };
 
-    const editCategory=async(req,res)=>{
+
+
+const editCategory = async (req, res) => {
   try {
-      const id=req.params.id;
-      const {categoryName,description}=req.body;
-      const existingCategory=await Category.findOne({name:categoryName})
+      const id = req.params.id;
+      const { categoryName, description } = req.body;
+
       
-      if(existingCategory){
-        return res.status(400).json({error:"category allredy exists please choose another name"})
-      }
-     
-     
-      const updateCategory=await Category.findByIdAndUpdate(id,{
-        name:categoryName,
-        description:description,
-      },{new:true})
-      if(updateCategory){
-      res.redirect("/admin/category");
+      const existingCategory = await Category.findOne({
+          name: categoryName,
+          _id: { $ne: id }
+      }).collation({ locale: 'en', strength: 2 }); 
 
+      if (existingCategory) {
+          return res.status(400).json({
+              success: false,
+              message: "Category already exists. Please choose another name."
+          });
       }
-      else{
-    res.status(400).json({error:"Category not found"})
 
+      const updateCategory = await Category.findByIdAndUpdate(
+          id,
+          { name: categoryName, description },
+          { new: true, runValidators: true }//Applies schema
+      );
+
+      if (!updateCategory) {
+          return res.status(404).json({
+              success: false,
+              message: "Category not found"
+          });
       }
+
+      return res.json({
+          success: true,
+          message: "Category updated successfully"
+      });
 
   } catch (error) {
-    res.status(500).json({error:"internal server error"})
-    
+      console.error("Error updating category:", error);
+      return res.status(500).json({
+          success: false,
+          message: "Internal server error"
+      });
   }
-
- }
-
+};
 
 
 

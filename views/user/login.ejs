@@ -126,7 +126,7 @@ body {
 }
 
 .sign-up-link {
-  color: #007BFF; /* Bright Blue */
+  color: #007BFF; 
   font-weight: bold;
   text-decoration: none;
 }
@@ -165,7 +165,7 @@ body {
         <form id="loginform" method="post" action="/login">
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" class="form-control" name="email" id="email" placeholder="Enter your email" />
+                <input type="text" class="form-control" name="email" id="email" placeholder="Enter your email" />
                 <div id="error1" class="error-message"></div>
             </div>
 
@@ -248,10 +248,10 @@ body {
             togglePassword.addEventListener("click", function () {
                 if (passid.type === "password") {
                     passid.type = "text";
-                    togglePassword.textContent = "👁️‍🗨️"; // Hide password icon
+                    togglePassword.textContent = "👁️‍🗨️"; 
                 } else {
                     passid.type = "password";
-                    togglePassword.textContent = "👁️"; // Show password icon
+                    togglePassword.textContent = "👁️"; 
                 }
             });
         });

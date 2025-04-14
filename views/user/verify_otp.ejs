@@ -170,7 +170,7 @@ input:focus {
                     <div id="otpTimer" class="otp-timer">
                         <span id="timerValue">60</span>
                     </div>
-                    <button id="resendOtp" type="button" class="btn btn-secondary" onclick="resendOTP()" disabled>Resend OTP</button>
+                    <button id="resendOtp" type="button" class="btn btn-secondary" onclick="resendOTP()" >Resend OTP</button>
                 </div>
                 <% if (locals.message && message.length > 0) { %>
                 <div class="alert alert-danger"><%= message %></div>
@@ -192,10 +192,12 @@ input:focus {
 
     function startTimer() {
         timerInterval = setInterval(() => {
+            document.getElementById("resendOtp").disabled=true;
             timer--;
             document.getElementById("timerValue").textContent = timer;
             if (timer <= 0) {
                 clearInterval(timerInterval);
+                document.getElementById("resendOtp").disabled=false;
                 document.getElementById("timerValue").classList.add("expired");
                 document.getElementById("timerValue").textContent = "Expired";
                 document.getElementById("resendOtp").disabled = false;
@@ -278,6 +280,6 @@ input:focus {
       }
 
 </script>
-<!-- <%- include("../../views/partials/user/footer") %> -->
+
 </body>
 </html>

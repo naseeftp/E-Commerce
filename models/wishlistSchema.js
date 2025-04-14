@@ -12,7 +12,7 @@ required:true
 },
 products:[{
   productId:{
-    type:Schema.Type.ObjectId,
+    type:Schema.Types.ObjectId,
     ref:"Product",
     required:true
   },

@@ -35,9 +35,9 @@ const count=await User.find({
     
     ]  
 }).countDocuments()
-// res.render('customers')
+
 res.render("customers", {
-    data: userData, // This makes 'data' available in EJS
+    data: userData, 
     totalPages: Math.ceil(count / limit),
     currentPage: page,
 });

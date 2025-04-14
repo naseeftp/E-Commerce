@@ -20,19 +20,7 @@ const userAuth=(req,res,next)=>{
     }
 }
 const adminAuth=(req,res,next)=>{
-    // User.findOne({isAdmin:true})
-    // .then(data=>{
-    //     if(data){
-    //         next();
-    //     }else{
-    //         res.redirect("/admin/login")
-    //     }
-    // })
-    // .catch(error=>{
-    //     console.log("error in adminAuth middleware",error);
-    //     res.status(500).send("internal server error")
-    // })
-
+   
     if (req.session.admin) {
          next()
     } else {
@@ -43,4 +31,5 @@ const adminAuth=(req,res,next)=>{
 
 module.exports={
    userAuth,
-   adminAuth,}
+   adminAuth,
+}

@@ -7,8 +7,6 @@ const path=require("path");
 const sharp=require("sharp");
 // const { search } = require("../../routes/adminRouter");
 
-
-
 const getProductAddPage=async (req,res)=>{
 try {
     const category=await Category.find({isListed:true})
@@ -24,77 +22,134 @@ catch (error)
 }
 }
 
-
 const addProducts = async (req, res) => {
     try {
         const products = req.body;
-        console.log(products);
-        
-        console.log("Received Product Data:", products);
-        
-        // Validate input
         if (!products.productName) {
-            return res.status(400).json({ error: "Product Name is required" });
+            return res.status(400).json({ 
+                swalError: true,
+                message: "Product Name is required"
+            });
         }
-
-        // Check if product already exists
         const productExists = await Product.findOne({
-            productName: products.productName, // FIXED
+            productName: { $regex: new RegExp(`${products.productName}$`, 'i') }
         });
 
-        if (!productExists) {
-            const images = [];
-            if (req.files && req.files.length > 0) {
-                for (let i = 0; i < req.files.length; i++) {  
-                    const originalImagePath = req.files[i].path;
-                    const resizedImagePath = path.join(
-                        "public",
-                        "uploads",
-                        "product-images",
-                        req.files[i].filename 
-                    );
-
-                    // Fix Sharp processing
-                    await sharp(originalImagePath)
-                        .resize({ width: 400, height: 440 })
-                        .toFile(resizedImagePath);
-
-                    images.push(req.files[i].filename);
-                }
-            }
-
-            // Find category ID
-            const categoryId = await Category.findOne({ name: products.category });
-            if (!categoryId) {
-                return res.status(400).json({ error: "Invalid category name" });
-            }
-
-            // Create new product
-            const newProduct = new Product({
-                productName: products.productName,  // FIXED
-                description: products.description,
-                brand: products.brand,
-                category: categoryId._id,
-                regularPrice: products.regularPrice,
-                salePrice: products.salePrice,
-                createdOn: new Date(),
-                quantity: products.quantity,
-                size: products.size,
-                color: products.color,
-                productImage: images,
-                status: 'Available'
+        if (productExists) {
+            return res.status(400).json({
+                swalError: true,
+                message: "Product already exists. Please try again with another name."
             });
-
-            await newProduct.save();
-            return res.redirect("/admin/addProducts");
-
-        } else {
-            return res.status(400).json("Product already exists, please try again with another name");
         }
 
+      
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                swalError: true,
+                message: "Please upload at least one image."
+            });
+        }
+
+    
+        const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+        for (const file of req.files) {
+            if (!allowedMimeTypes.includes(file.mimetype)) {
+                return res.status(400).json({
+                    swalError: true,
+                    message: `Invalid file type for ${file.originalname}. Only JPEG, JPG, PNG, or WEBP images are allowed.`
+                });
+            }
+        }
+
+       
+        const images = [];
+        for (const file of req.files) {
+            const originalImagePath = file.path;
+            const resizedImagePath = path.join(
+                "public",
+                "uploads",
+                "product-images",
+                file.filename
+            );
+
+            await sharp(originalImagePath)
+                .resize({ width: 400, height: 440 })
+                .toFile(resizedImagePath);
+
+            images.push(file.filename);
+        }
+
+     
+        const categoryId = await Category.findOne({ name: products.category });
+        if (!categoryId) {
+            return res.status(400).json({
+                swalError: true,
+                message: "Invalid category selected."
+            });
+        }
+
+       const regularPrice=parseFloat(products.regularPrice);
+       let salePrice=regularPrice;
+
+        const categoryOffer=categoryId.categoryoffer||0;
+        const productOffer=0;
+
+        const higherOffer=Math.max(categoryOffer,productOffer);
+
+      
+        if(higherOffer>0){
+        salePrice=regularPrice-Math.floor(regularPrice*(higherOffer/100));
+       }
+      
+       if(categoryId.categoryoffer&&categoryId.categoryoffer>0){
+        salePrice=regularPrice*(1-(categoryId.categoryoffer/100));
+      }
+
+      if(products.salePrice&&parseFloat(products.salePrice)<salePrice){
+        salePrice=parseFloat(products.salePrice)
+      }
+
+        const sizes = [];
+        if (products.sizeQuantity && typeof products.sizeQuantity === "object") {
+            for (const [size, quantity] of Object.entries(products.sizeQuantity)) {
+                const qty = parseInt(quantity, 10) || 0;
+                if (qty > 0) {
+                    sizes.push({ size, quantity: qty });
+                }
+            }
+        }
+
+   
+        const newProduct = new Product({
+            productName: products.productName,
+            description: products.description,
+            brand: products.brand,
+            category: categoryId._id,
+            regularPrice: regularPrice,
+            salePrice: salePrice,
+            createdOn: new Date(),
+            sizes: sizes,
+            color: products.color,
+            productImage: images,
+            status: 'Available',
+            categoryoffer: categoryOffer,
+            productOffer: productOffer,
+            finalPrice:salePrice
+        });
+
+        await newProduct.save();
+
+        return res.json({
+            success: true,
+            message: "Product added successfully!"
+        });
+
     } catch (error) {
-        console.error("Error saving product", error);
-        return res.redirect("/admin/pagerror");
+        console.error("Error saving product:", error);
+        return res.status(500).json({
+            swalError: true,
+            message: "An error occurred while saving the product. Please try again."
+        });
     }
 };
 
@@ -111,8 +166,12 @@ try {
 
     ],
 
-    }).limit(limit*1).skip((page-1)*limit).populate('category').exec();
-    
+    }).limit(limit*1).skip((page-1)*limit).populate({
+        path: 'category',
+        select: 'name', 
+        options: { lean: true } 
+    }).exec();
+    const filteredProducts = productData.filter(product => product.category !== null);
     const count= await Product.find({
     $or:[
      {productName:{$regex:new RegExp(".*"+search+".*","i")}},
@@ -127,7 +186,7 @@ try {
    const brand=await Brand.find({isBloocked:false});
    if(category&&brand){
     res.render("products",{
-     data:productData,
+    data: filteredProducts.length > 0 ? filteredProducts : productData,
      currentPage:page,
      totalPages:page,
      totalPages:Math.ceil(count/limit),
@@ -135,16 +194,14 @@ try {
      brand:brand,
 
     })
-   }else{
+   }
+   else{
     res.redirect("page-404");
 
-   }
-    
+ }
 } catch (error) {
     res.redirect("/pageerror");
 }
-
-
 }
 
 const  blockProduct= async(req,res)=>{
@@ -169,28 +226,26 @@ const  unblockProduct= async(req,res)=>{
     
     }
 
-    ///
-     
-
     const getEditProduct=async (req,res)=>{
-     try {
-     const id=req.query.id;
-     const product=await Product.findOne({_id:id});
-     const category=await Category.find({});
-     const brand=await Brand.find({});
-     res.render('edit-product',{
-      product:product,
-      cat:category,
-      brand:brand,
-
-
-     })
-     } catch (error) {
-        res.redirect("/pageerror")
-     }
-
-
-    }
+        try {
+        const id=req.query.id;
+        const product=await Product.findOne({_id:id});
+        const category=await Category.find({});
+        const brand=await Brand.find({});
+        res.render('edit-product',{
+         product:product,
+         cat:category,
+         brand:brand,
+   
+   
+        })
+        } catch (error) {
+           res.redirect("/pageerror")
+        }
+   
+   
+       }
+   
 
 
 const editProduct = async (req, res) => {
@@ -198,64 +253,117 @@ const editProduct = async (req, res) => {
         const id = req.params.id;
         const product = await Product.findOne({ _id: id });
         const data = req.body;
-
-        // Check if a product with the same name already exists (excluding the current product)
         const existingProduct = await Product.findOne({
-            productName: data.productName,
-            _id: { $ne: id }
+           productName: { $regex: new RegExp(`^${data.productName}$`, 'i') },
+           _id: { $ne: id }
         });
 
         if (existingProduct) {
-            return res.status(400).json({ error: "Product with this name already exists, please try another name." });
+            return res.status(400).json({
+                swalError: true,
+                message: "Product with this name already exists. Please try another name."
+            });
+        }
+
+        if (req.files && req.files.length > 0) {
+            const allowedMimeTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/webp'];
+            for (const file of req.files) {
+                if (!allowedMimeTypes.includes(file.mimetype)) {
+                    return res.status(400).json({
+                        swalError: true,
+                        message: `Invalid file type for ${file.originalname}. Only JPEG, PNG, or WEBP images are allowed.`
+                    });
+                }
+            }
         }
 
         const images = [];
         if (req.files && req.files.length > 0) {
-            for (let i = 0; i < req.files.length; i++) {
-                images.push(req.files[i].filename);
+            for (const file of req.files) {
+                const originalImagePath = file.path;
+                const resizedImagePath = path.join(
+                    "public",
+                    "uploads",
+                    "product-images",
+                    file.filename
+                );
+                await sharp(originalImagePath)
+                    .resize({ width: 400, height: 440 })
+                    .toFile(resizedImagePath);
+                images.push(file.filename);
             }
+        }
+
+        let sizes = [];
+        if (data.sizesWithQuantities) {
+            const sizesWithQuantities = JSON.parse(data.sizesWithQuantities);
+            sizes = Object.keys(sizesWithQuantities).map(size => ({
+                size: size,
+                quantity: sizesWithQuantities[size]
+            }));
+        }
+
+        const newCategory = await Category.findOne({ name: data.category });
+        if (!newCategory) {
+            return res.status(400).json({
+                swalError: true,
+                message: "Invalid category selected"
+            });
+        }
+
+        const currentProduct = await Product.findById(id);
+        const isCategoryChanged = !currentProduct.category.equals(newCategory._id);
+        const regularPrice = parseFloat(data.regularPrice);
+        
+        const categoryOffer = newCategory.categoryoffer || 0;
+        const productOffer = currentProduct.productOffer || 0;
+        const higherOffer = Math.max(categoryOffer, productOffer);
+        
+        let salePrice = regularPrice;  
+        let finalPrice = regularPrice;
+        
+        if (higherOffer > 0) {
+            finalPrice = regularPrice - Math.floor(regularPrice * (higherOffer / 100));
+            salePrice = finalPrice;
         }
 
         const updateFields = {
             productName: data.productName,
             description: data.description,
             brand: data.brand,
-            category: product.category,
-            regularPrice: data.regularPrice,
-            salePrice: data.salePrice,
-            quantity: data.quantity,
-            size: data.size,
+            category: newCategory._id,
+            regularPrice: regularPrice,
+            salePrice: salePrice,
             color: data.color,
+            sizes: sizes,
+            categoryoffer: categoryOffer, 
+            productOffer: productOffer, 
+            finalPrice: finalPrice
         };
 
         if (images.length > 0) {
-            updateFields.$push = { productImage: { $each: images } }; 
+            updateFields.$push = { productImage: { $each: images } };
         }
 
         await Product.findByIdAndUpdate(id, updateFields, { new: true });
-        res.redirect("/admin/products");
+        return res.json({ success: true });
     } catch (error) {
         console.error(error);
-        res.redirect("/pageerror");
+        return res.status(500).json({
+           swalError: true,
+           message: "An error occurred while updating the product" 
+        });
     }
 };
 
-
-
-
- 
-
-
-
-
-  const deleteSingleImage=async(req,res)=>{
+const deleteSingleImage=async(req,res)=>{
   try {
     const {imageNameToServer,productIdToServer}=req.body;
     const product=await Product.findByIdAndUpdate(productIdToServer,{$pull:{productImage:imageNameToServer}})
     const imagePath=path.join("public","uploadds","re-image",imageNameToServer);
     if(fs.existsSync(imagePath)){
-  await fs.unlinkSync(imagePath);
-  console.log(`Image ${imageNameToServer} deleted succesfully`);
+    await fs.unlinkSync(imagePath);
+    console.log(`Image ${imageNameToServer} deleted succesfully`);
 
     }
     else{

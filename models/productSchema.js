@@ -34,10 +34,23 @@ const productSchema = new Schema(
       type: Number,
       default: 0,
     },
-    quantity: {
-      type: Number,
-      required: false,
+       
+    categoryoffer: { type: Number,
+       default: 0 
+      },
+
+    finalamount:{
+      type:Number,
+      default:0,
+      require:false,
     },
+    sizes: [
+      {
+        size: { type: String, required: true },
+        quantity: { type: Number, required: true, min: 0 },
+      }
+    ],
+
     color: {
       type: String,
       required: true,
@@ -57,7 +70,7 @@ const productSchema = new Schema(
       default: "Available",
     },
   },
-  { timestamps: true } // Correct usage of timestamps
+  { timestamps: true } 
 );
 
 

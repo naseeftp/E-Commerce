@@ -1,7 +1,5 @@
 const express=require("express");
-
 const passport=require("./config/passport");
-
 const env=require("dotenv").config();
 const session=require("express-session")
 const db=require("./config/db")
@@ -9,10 +7,9 @@ const userRouter=require("./routes/userRouter");
 const adminRouter=require('./routes/adminRouter');
 const nocache = require('nocache')
 const User=require("./models/userSchema")
+const flash=require('connect-flash');
+
 db()
-
-
-
 
 const app=express();
 const path=require('path');
@@ -29,6 +26,12 @@ app.use(session({
         maxAge:72*60*60*1000
     }
 }))
+app.use(flash());
+app.use((req,res,next)=>{
+    res.locals.error=req.flash('error');
+    res.locals.success=req.flash("success");
+    next();
+})
 app.use(passport.initialize());
 app.use(passport.session());
 

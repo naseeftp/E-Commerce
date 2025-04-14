@@ -169,7 +169,7 @@ html, body {
 
     function validateOtpForm(){
         const otpInput=document.getElementById('otp').value;
-       $.ajax({
+        $.ajax({
         type:'POST',
         url:'/verify-passForgot-otp',
         data:{otp:otpInput},

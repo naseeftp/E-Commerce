@@ -194,7 +194,7 @@ const nameid = document.getElementById("name");
         const togglePassword = document.getElementById("togglePassword");
         const toggleConfirmPassword = document.getElementById("toggleConfirmPassword");
 
-        // Name Validation
+      
         function nameValidatechecking() {
             const nameval = nameid.value.trim();
             const namepattern = /^[A-Za-z\s]+$/;
@@ -214,7 +214,7 @@ const nameid = document.getElementById("name");
             }
         }
 
-        // Email Validation
+      
         function emailValidatechecking() {
             const emailval = emailid.value.trim();
             const emailpattern = /^[a-z0-9._-]+@[a-z0-9.-]+\.[a-z]{2,4}$/;
@@ -234,27 +234,32 @@ const nameid = document.getElementById("name");
             }
         }
 
-        // Phone Validation
-        function phoneValidatechecking() {
-            const phoneval = phoneid.value.trim();
-            const phonepattern = /^[0-9]{10}$/;
+                    
+              function phoneValidatechecking() {
+                    const phoneval = phoneid.value.trim();
+                    const phonePattern = /^[6-9]\d{9}$/;
 
-            if (phoneval === "") {
-                phoneerror.style.display = "block";
-                phoneerror.innerHTML = "Please enter a valid phone number";
-                return false;
-            } else if (!phonepattern.test(phoneval)) {
-                phoneerror.style.display = "block";
-                phoneerror.innerHTML = "Enter a 10-digit phone number";
-                return false;
-            } else {
-                phoneerror.style.display = "none";
-                phoneerror.innerHTML = "";
-                return true;
-            }
-        }
+                    if (phoneval === "") {
+                        phoneerror.style.display = "block";
+                        phoneerror.innerHTML = "Please enter a valid phone number";
+                        return false;
+                    } else if (!phonePattern.test(phoneval)) {
+                        phoneerror.style.display = "block";
+                        phoneerror.innerHTML = "Enter a valid 10-digit phone number starting with 6, 7, 8, or 9";
+                        return false;
+                    } else if (/^(\d)\1{9}$/.test(phoneval)) {
+                        phoneerror.style.display = "block";
+                        phoneerror.innerHTML = "Phone number cannot have all identical digits";
+                        return false;
+                    } else {
+                        phoneerror.style.display = "none";
+                        phoneerror.innerHTML = "";
+                        return true;
+                    }
+                }
 
-        // Password Validation
+
+      
         function passwordValidatechecking() {
             const passval = passwordid.value.trim();
             const confirmval = confirmid.value.trim();
@@ -285,7 +290,7 @@ const nameid = document.getElementById("name");
             }
         }
 
-        // Toggle Password Visibility
+    
         function toggleVisibility(inputField, toggleButton) {
             toggleButton.addEventListener("click", function () {
                 if (inputField.type === "password") {
@@ -301,7 +306,7 @@ const nameid = document.getElementById("name");
         toggleVisibility(passwordid, togglePassword);
         toggleVisibility(confirmid, toggleConfirmPassword);
 
-        // Form Validation on Submit
+      
         signupform.addEventListener("submit", function (e) {
             let isValid = nameValidatechecking() && emailValidatechecking() && phoneValidatechecking() && passwordValidatechecking();
             if (!isValid) {
