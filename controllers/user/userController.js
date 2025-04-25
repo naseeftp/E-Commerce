@@ -3,7 +3,6 @@ const User=require("../../models/userSchema");
 const Category=require("../../models/categorySchema");
 const Product=require("../../models/productSchema");
 const Brand=require("../../models/brandSchema");
-const Banner=require("../../models/bannerSchema");
 const Cart = require('../../models/cartSchema')
 const Address = require('../../models/addressSchema')
 const  order=require("../../models/orderSchema")
