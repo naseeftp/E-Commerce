@@ -4,7 +4,6 @@ const Category=require("../../models/categorySchema");
 const Product=require("../../models/productSchema");
 const Brand=require("../../models/brandSchema");
 const Cart = require('../../models/cartSchema')
-const Address = require('../../models/addressSchema')
 const  order=require("../../models/orderSchema")
 const Coupon=require('../../models/couponSchema')
 const { v4: uuidv4 } = require('uuid');

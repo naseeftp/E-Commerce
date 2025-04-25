@@ -67,7 +67,7 @@ app.use(async (req, res, next) => {
   });
 
 app.listen(process.env.PORT,()=>{
-    console.log("server running")
+    console.log(`server running http://localhost:${process.env.PORT}`)
 })
 
 
