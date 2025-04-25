@@ -85,16 +85,24 @@ const getUnlistCategory=async(req,res)=>{
 
 
 
+
+
 const editCategory = async (req, res) => {
   try {
       const id = req.params.id;
-      const { categoryName, description } = req.body;
+      let { categoryName, description } = req.body;
 
-      
+      if (typeof categoryName === 'undefined' && req.headers['content-type'] === 'application/x-www-form-urlencoded') {
+          const body = require('querystring').parse(req.body);
+          categoryName = body.categoryName;
+          description = body.description;
+      }
+
+     
       const existingCategory = await Category.findOne({
-          name: categoryName,
+          name: { $regex: new RegExp(`^${categoryName}$`, 'i') },
           _id: { $ne: id }
-      }).collation({ locale: 'en', strength: 2 }); 
+      });
 
       if (existingCategory) {
           return res.status(400).json({
@@ -106,7 +114,7 @@ const editCategory = async (req, res) => {
       const updateCategory = await Category.findByIdAndUpdate(
           id,
           { name: categoryName, description },
-          { new: true, runValidators: true }//Applies schema
+          { new: true, runValidators: true }
       );
 
       if (!updateCategory) {
@@ -129,10 +137,6 @@ const editCategory = async (req, res) => {
       });
   }
 };
-
-
-
-
 
 
 module.exports={

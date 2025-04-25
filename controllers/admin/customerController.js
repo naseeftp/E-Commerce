@@ -42,7 +42,7 @@ res.render("customers", {
     currentPage: page,
 });
 
-} catch (err0r) {
+} catch (error) {
     console.error("Error fetching customer data:", error);
     res.status(500).send("Internal Server Error");  
 }

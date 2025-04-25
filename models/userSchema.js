@@ -1,4 +1,5 @@
 const mongoose=require("mongoose");
+const { v4: uuidv4 } = require('uuid');
 const {Schema}=mongoose;
 
 const userSchema=new Schema({
@@ -72,16 +73,26 @@ createdOn:{
 type:Date,
 default:Date.now,
 },
-referalCode:{
-    type:String
-},
-redeemed:{
-type:Boolean
+referralCode:{
+type:String,
+unique:true,
+default:()=>uuidv4().slice(0,8),
 
 },
-redeemedUsers:[{
+
+referredBy:{
 type:Schema.Types.ObjectId,
-ref:"User"
+ref:"User",
+default:null,
+},
+redeemed:{
+type:Boolean,
+default:false,
+},
+redeemedUsers:[{
+    type: Schema.Types.ObjectId,
+    ref: "User",
+
 }],
 searchHistory:[{
     category:{

@@ -33,7 +33,7 @@ const createOrder = async (req, res) => {
         const options = {
             amount: Math.round(Number(amount) * 100), 
             currency: currency || "INR",
-            payment_capture: 1,
+            payment_capture: 1,//payment capture automattically
         }
         
         const order = await razorpay.orders.create(options)
@@ -254,9 +254,11 @@ const getOrderDetails = async (req, res) => {
         }
 
 const selectedAddress = order.address;
+const deliveryCharge=order.deliveryCharge||0
 
 res.render("orderDetails", { orders: order,
      address: selectedAddress,
+     deliveryCharge,
      discount: order.couponApplied ? order.totalPrice - order.finalAmount : 0
     
     
@@ -513,7 +515,7 @@ const downloadInvoice = async (req, res) => {
 
         doc.moveDown(3);
 
-        // Order Details section with improved spacing
+      
         doc.fontSize(14)
            .font('Helvetica-Bold')
            .text('Order Details', { underline: true });
@@ -530,7 +532,6 @@ const downloadInvoice = async (req, res) => {
             status: 460 
         };
 
-        // Table headers
         doc.font('Helvetica-Bold').fontSize(10);
         Object.keys(columns).forEach(key => {
             const header = key.charAt(0).toUpperCase() + key.slice(1);
@@ -541,7 +542,6 @@ const downloadInvoice = async (req, res) => {
         drawHorizontalLine(doc.y);
         doc.font('Helvetica');
 
-        // Table content with improved spacing
         let currentY = doc.y + 10;
         order.orderItems.forEach((item, index) => {
             doc.text(`${index + 1}. ${item.product.productName}`, columns.item, currentY, { width: 140 }) 
@@ -553,7 +553,7 @@ const downloadInvoice = async (req, res) => {
             
             currentY += 20;
 
-            // Handle page overflow
+        
             if (currentY > doc.page.height - 150) {
                 doc.addPage();
                 currentY = 50;
@@ -574,7 +574,7 @@ const downloadInvoice = async (req, res) => {
         drawHorizontalLine(currentY);
         currentY += 30;
 
-        // Summary section with better alignment
+    
         doc.fontSize(14)
            .font('Helvetica-Bold')
            .text('Summary', 50, currentY);
@@ -587,7 +587,7 @@ const downloadInvoice = async (req, res) => {
             { label: 'Delivery Charge:', value: order.deliveryCharge || DELIVERY_CHARGE },
         ];
 
-        // Right-aligned summary values
+     
         const summaryLabelX = 350;
         const summaryValueX = 480;
         
@@ -600,7 +600,6 @@ const downloadInvoice = async (req, res) => {
             currentY += 15;
         });
 
-        // Final amount with emphasis
         doc.font('Helvetica-Bold')
            .text('Final Amount:', summaryLabelX, currentY, { width: 120, align: 'right' })
            .text(formatCurrency(order.finalAmount), summaryValueX, currentY, { align: 'right' });
@@ -609,14 +608,13 @@ const downloadInvoice = async (req, res) => {
         drawHorizontalLine(currentY);
         currentY += 30;
 
-        // Shipping Address with improved styling
+     
         doc.fontSize(14)
            .font('Helvetica-Bold')
            .text('Shipping Address', 50, currentY);
         
         currentY += 25;
 
-        // Address box with better styling
         const addressBoxY = currentY;
         doc.rect(50, addressBoxY, 250, 120)
            .fillAndStroke('#f6f6f6', '#cccccc');
@@ -631,7 +629,7 @@ const downloadInvoice = async (req, res) => {
             `Alternate Phone: ${order.address.altPhone || 'N/A'}`
         ];
 
-        // Address content with better spacing
+ 
         addressDetails.forEach((detail, index) => {
             if (index === 0) {
                 doc.font('Helvetica-Bold');
@@ -641,7 +639,6 @@ const downloadInvoice = async (req, res) => {
             doc.text(detail, 60, addressBoxY + 10 + (index * 15));
         });
 
-        // Order info with better alignment
         const orderInfoX = 350;
         const orderInfoValueX = 450;
         
@@ -655,7 +652,7 @@ const downloadInvoice = async (req, res) => {
            .font('Helvetica')
            .text(order.paymentMethod || 'Not Available', orderInfoValueX, addressBoxY + 25);
 
-        // Footer with improved styling
+    
         const footerY = doc.page.height - 100;
         drawHorizontalLine(footerY);
 

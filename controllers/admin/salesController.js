@@ -58,7 +58,6 @@ const loadSalesPage = async (req, res) => {
             totalRegularPrice += orderRegularPrice;
             totalFinalAmount += finalAmountWithoutDelivery;
 
-            // const actualDiscount = orderRegularPrice - finalAmountWithoutDelivery;
 
            totalDeliveryCharge+=order.deliveryCharge||0;
             const couponDiscount = order.discount ? (order.totalPrice - order.finalAmount) : 0;
@@ -94,7 +93,6 @@ const loadSalesPage = async (req, res) => {
             lessPrices: totalDeliveryCharge,
             
         };
-        console.log("sales datta",salesData )
 
         if (format === 'pdf') {
             return generatePDF(res, salesData); 

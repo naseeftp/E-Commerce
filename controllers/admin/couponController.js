@@ -18,7 +18,7 @@ try {
     
     
     if (existingCoupon) {
-     req.flash("error", "Coupon with this name already exists.");
+      req.flash("error", "Coupon with this name already exists.");
       return res.redirect("/admin/coupon");
     }
     const data={
@@ -48,8 +48,8 @@ return res.redirect('/admin/coupon');
 const editCoupon=async(req,res)=>{
 try {
     const id=req.query.id;
-const findCoupon=await Coupon.findOne({_id:id});
-res.render('edit-coupon',{
+    const findCoupon=await Coupon.findOne({_id:id});
+    res.render('edit-coupon',{
     findCoupon:findCoupon,
 })
 } catch (error) {

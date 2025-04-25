@@ -38,7 +38,7 @@ app.use(passport.session());
 app.use(nocache())
 
 app.use((req,res,next)=>{
-    res.set('cache-control','no-Store')
+    res.set('cache-control','no-Store')//http header 
     next();
 });
 app.set("view engine","ejs");
@@ -69,3 +69,8 @@ app.use(async (req, res, next) => {
 app.listen(process.env.PORT,()=>{
     console.log("server running")
 })
+
+
+
+
+

@@ -140,7 +140,7 @@ body {
     padding: 0.5rem;
 }
 
-.status-badge {
+/* .status-badge {
     padding: 0.5rem 0.9rem;
     border-radius: 50px;
     font-size: 0.75rem;
@@ -161,8 +161,57 @@ body {
 .status-cancelled {
     background-color: rgba(153, 153, 153, 0.15);
     color: #999999;
-}
+} */
 
+.status-badge {
+    padding: 0.5rem 0.9rem;
+    border-radius: 50px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    display: inline-block;
+    margin: 0.2rem;
+  }
+
+  .status-pending {
+    background-color: rgba(255, 206, 86, 0.15); /* #FFCE56 */
+    color: #FFCE56;
+  }
+
+  .status-processing {
+    background-color: rgba(54, 162, 235, 0.15); /* #36A2EB */
+    color: #36A2EB;
+  }
+
+  .status-shipped {
+    background-color: rgba(255, 99, 132, 0.15); /* #FF6384 */
+    color: #FF6384;
+  }
+
+  .status-delivered {
+    background-color: rgba(75, 192, 192, 0.15); /* #4BC0C0 */
+    color: #4BC0C0;
+  }
+
+  .status-cancelled {
+    background-color: rgba(255, 159, 64, 0.15); /* #FF9F40 */
+    color: #FF9F40;
+  }
+
+  .status-return-requested {
+    background-color: rgba(153, 102, 255, 0.15); /* #9966FF */
+    color: #9966FF;
+  }
+
+  .status-return-approved {
+    background-color: rgba(0, 196, 180, 0.15); /* #00C4B4 */
+    color: #00C4B4;
+  }
+
+  .status-return-rejected {
+    background-color: rgba(255, 107, 107, 0.15); /* #FF6B6B */
+    color: #FF6B6B;
+  }
 .product-image {
     width: 50px;
     height: 50px;
@@ -269,12 +318,10 @@ body {
     margin-bottom: 1.5rem;
 }
 
-/* Chart colors - only apply grayscale to the sales chart */
 #salesChart {
     filter: grayscale(100%);
 }
 
-/* Stats icons colors */
 .stats-card:nth-child(1) .stats-icon {
     background-color: rgba(0, 0, 0, 0.12);
     color: #000000;
@@ -667,14 +714,14 @@ body {
     });
 
     
-// Order Status Chart
+
 const orderStatusCtx = document.getElementById('orderStatusChart').getContext('2d');
 
-// Use pre-processed data from server
+
 const statusData = JSON.parse('<%- JSON.stringify(dashboardData.statusChartData) %>');
 
 
-// Initialize chart
+
 const orderStatusChart = new Chart(orderStatusCtx, {
   type: 'doughnut',
   data: {
@@ -705,7 +752,7 @@ const orderStatusChart = new Chart(orderStatusCtx, {
   }
 });
 
-// Generate legend (same as before)
+
 function generateLegend() {
   const legendContainer = document.getElementById('orderStatusLegend');
   let legendHTML = '<div class="row g-2">';

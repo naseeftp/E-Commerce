@@ -678,7 +678,7 @@
                 <table class="summary-table">
                     <tr>
                         <th>Shipping</th>
-                        <td><em>-₹<%=locals.deliveryCharge%></em></td>
+                        <td><em>₹<%=locals.deliveryCharge%></em></td>
                     </tr>
                     <tr>
                         <th>Discount</th>
@@ -1057,7 +1057,8 @@ async function applyCoupon(productPrice) {
         Swal.fire({
             icon: 'error',
             title: 'Server Error',
-            text: 'Something went wrong! Please try again later: ' + error.message,
+            // text: 'Something went wrong! Please try again later: ' + error.message,
+            text: 'you should buy more than minimum price to apply coupon: ',
             confirmButtonColor: '#d33'
         });
     }

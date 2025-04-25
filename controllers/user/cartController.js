@@ -20,6 +20,21 @@ const getCartPage = async (req, res) => {
         items:[],
       })
     }
+
+    const validItems=[];
+    for(const item of cart.items){
+      if(item.productId&&!item.productId.isBlocked){
+        validItems.push(item)
+      }
+    }
+
+    if(validItems.length!==cart.items.length){
+      cart.items=validItems;
+      await cart.save()
+    }
+
+
+
     const totalItems=cart.items.length;
     const totalPages=Math.ceil(totalItems/limit);
     const currentPage=Math.max(1,Math.min(page,totalPages));
@@ -33,7 +48,7 @@ const getCartPage = async (req, res) => {
       });
     const userData = await User.findById(userId)
     res.render("cart", {
-      cart:{...cart.toObject(),items:paginatedItems},
+      cart:{...cart.toObject(),items:paginatedItems},//conversion of  mongoose doc in to plain js obj
       user:userData,
       totalPrice: totalPrice,
       grandTotal: null,

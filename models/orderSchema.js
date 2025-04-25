@@ -51,7 +51,7 @@ const orderSchema=new Schema({
                status: {
             type: String,
             default: 'Pending',
-            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Return Approved','Return Rejected', 'Returned', ' returnReason']
+            enum: ['Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Return Approved','Return Rejected', ' returnReason']
         },
         returnReason: {
           type: String,

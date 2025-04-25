@@ -171,13 +171,13 @@ const userProfile=async(req,res)=>{
         let wallet= await Wallet.findOne({userId:userId});
         const addressData=await Address.findOne({userId : userId});
         const orders = await Order.find({ userId: userId })
-        .sort({ createdOn: -1 }); 
+        .sort({ createdOn: 1 }); 
         if(!wallet){
             wallet={balance:0,  transactions: []};
         }
 
 
-        res.render('profile',{
+        res.render('dashbord',{
         user:userData,userAddress:addressData,
         orders: orders || [],
         searchQuery: req.query || {},
@@ -193,7 +193,87 @@ const userProfile=async(req,res)=>{
         
     }
 }
+const getOrders = async (req, res) => {
+    try {
+      const userId = req.session.user;
+      if (!userId) {
+        return res.status(401).send('User not found');
+      }
 
+      const user= await User.findById(userId)
+      const limit = 6;
+      const currentPage = parseInt(req.query.page) || 1;
+      const skip = (currentPage - 1) * limit;
+      const searchQuery = req.query.search ? req.query.search.trim() : '';
+    let query = { userId };
+      if (searchQuery) {
+        query.orderId = { $regex: searchQuery, $options: 'i' };
+      }
+        const totalOrders = await Order.countDocuments(query);
+        const orders = await Order.find(query)
+        .sort({ createdOn: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean();
+  
+      const totalPages = Math.ceil(totalOrders / limit);
+  
+      res.render('orderprofile', {
+        user,
+        orders,
+        currentPage,
+        totalPages,
+        totalOrders,
+        searchQuery,
+        noMatch: searchQuery && orders.length === 0
+      });
+    } catch (error) {
+      console.error('Error in getting orders:', error);
+      res.status(500).send('Server Error');
+    }
+  };
+
+
+
+const getAddress = async (req, res) => {
+    try {
+      const userId = req.session.user;
+      if (!userId) {
+        return res.status(401).send('Unauthorized');
+      }
+  
+      const limit = 2;
+      const currentPage = parseInt(req.query.page) || 1;
+      const skip = (currentPage - 1) * limit;
+  
+     
+      const addressData = await Address.findOne({ userId }).lean();
+      const totalAddresses = addressData && addressData.address ? addressData.address.length : 0;
+      const totalPages = Math.ceil(totalAddresses / limit);
+  
+    
+      const paginatedAddressData = await Address.findOne({ userId }, {
+        address: { $slice: [skip, limit] }
+      }).lean();
+  
+      const userData = {
+        name: '',
+        email: '',
+        phone: '',
+        referralCode: '',
+      };
+  
+      res.render('profileaddress', {
+        user: userData,
+        userAddress: { address: paginatedAddressData ? paginatedAddressData.address : [] },
+        currentPage,
+        totalPages
+      });
+    } catch (error) {
+      console.error('Error in getAddress:', error);
+      res.status(500).send('Server Error');
+    }
+  };
 const changeEmail=async(req,res)=>{
 try {
     res.render("change-email");
@@ -282,7 +362,7 @@ const updateEmail=async(req,res)=>{
 
 const changePassword=async(req,res)=>{
 try {
-    res.render("change-password");
+    res.render("updatePassword");
   } catch (error) {
     res.redirect("/pageNotFound");
     
@@ -374,7 +454,7 @@ const postAddAddress = async (req, res) => {
             await userAddress.save();
         }
 
-        res.redirect("/userProfile");
+        res.redirect("/useraddress");
     } catch (error) {
         console.log("error adding address:", error);
         res.redirect("/pageNotFound");
@@ -437,7 +517,7 @@ try {
 
       }} 
     )
-    res.redirect("/userProfile")
+    res.redirect("/useraddress")
 
 } catch (error) {
     console.error("error in edit address",error);
@@ -469,7 +549,7 @@ try {
    }
 
 )
-res.redirect('/userProfile')
+res.redirect('/useraddress')
 
 } catch (error) {
    console.log("error in delete address") ;
@@ -621,6 +701,9 @@ module.exports = {
     getUpdatePassword,
     updatePassword,
     getEditProfile,
-    updateProfile
+    updateProfile,
+
+    getAddress,
+    getOrders
 
 };

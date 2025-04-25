@@ -168,6 +168,23 @@
     color: white;
     border-color: #0ea5e9;
 }
+
+.clear-search {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 0;
+        display: none;
+    }
+
+    .clear-search:hover {
+        color: var(--accent-blue);
+    }
 </style>
 
 
@@ -176,10 +193,18 @@
         <div class="page-header">
             <h1 class="page-title" style="color: black;">Orders</h1>
             <div class="search-container">
-                <input type="text" class="search-input" placeholder="Search orders">
-                <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
+                <form action="/admin/orderList" method="GET" id="searchForm">
+                    <input type="text" name="search" class="search-input" placeholder="Search orders" value="<%= typeof search !== 'undefined' ? search : '' %>">
+                    <button type="submit" style="display: none;"></button>
+                    <svg class="search-icon" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <button type="button" class="clear-search">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                    </button>
+                </form>
             </div>
         </div>
 
@@ -220,22 +245,20 @@
             </table>
         </div>
     </div>
+ 
     <% if (totalPages > 1) { %>
         <div class="pagination">
             <% if (hasPreviousPage) { %>
-                <a href="/admin/orderList?page=<%= currentPage - 1 %>" class="page-link">Previous</a>
+                <a href="/admin/orderList?page=<%= currentPage - 1 %><%= search ? '&search=' + search : '' %>" class="page-link">Previous</a>
             <% } %>
             
             <% 
-        
             let startPage = Math.max(1, currentPage - 1);
             let endPage = Math.min(totalPages, currentPage + 1);
             
-        
             if (currentPage === 1) {
                 endPage = Math.min(3, totalPages);
             }
-            
             
             if (currentPage === totalPages) {
                 startPage = Math.max(1, totalPages - 2);
@@ -243,30 +266,32 @@
             %>
             
             <% for (let page = startPage; page <= endPage; page++) { %>
-                <a href="/admin/orderList?page=<%= page %>" class="page-link <%= currentPage === page ? 'active' : '' %>">
+                <a href="/admin/orderList?page=<%= page %><%= search ? '&search=' + search : '' %>" class="page-link <%= currentPage === page ? 'active' : '' %>">
                     <%= page %>
                 </a>
             <% } %>
             
             <% if (hasNextPage) { %>
-                <a href="/admin/orderList?page=<%= currentPage + 1 %>" class="page-link">Next</a>
+                <a href="/admin/orderList?page=<%= currentPage + 1 %><%= search ? '&search=' + search : '' %>" class="page-link">Next</a>
             <% } %>
         </div>
     <% } %>
 
-    
-
     <script>
         
-        document.querySelector('.search-input').addEventListener('input', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const rows = document.querySelectorAll('tbody tr');
-            
-            rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(searchTerm) ? '' : 'none';
-            });
+        document.querySelector('.search-input').addEventListener('input', async function(e) {
+            const searchTerm = e.target.value.trim();
+            const response = await fetch(`/admin/orderList?search=${encodeURIComponent(searchTerm)}`);
+            const html = await response.text();
+            document.querySelector('.orders-container').innerHTML = new DOMParser()
+                .parseFromString(html, 'text/html')
+                .querySelector('.orders-container').innerHTML;
         });
+        clearButton.addEventListener('click', function() {
+            searchInput.value = '';
+            window.location.href = `/admin/orderList?page=<%= currentPage %>`;
+        });
+
     </script>
 </body>
 

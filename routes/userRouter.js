@@ -54,6 +54,8 @@ router.post("/update-email",userAuth,profileController.updateEmail);
 router.get('/change-password',userAuth,profileController.changePassword);
 router.post('/change-password',userAuth,profileController.changePasswordValid);
 router.post("/verify-changepassword-otp",userAuth,profileController.verifyChangePassOtp);
+router.get('/useraddress', userAuth,profileController.getAddress);
+router.get('/orders',userAuth,profileController.getOrders)
 
  router.get('/updatePassword',userAuth,profileController.getUpdatePassword)
  router.post('/updatePassword',userAuth,profileController.updatePassword)
@@ -110,6 +112,7 @@ router.get('/downloadInvoice/:id', userAuth, orderController.downloadInvoice);
 
 // wallet management
 router.get('/wallet',userAuth, walletController.loadWallet);
+router.get('/wallethistory',userAuth,walletController.getWallethistory)
 router.post('/wallet/create-razorpay-order', userAuth, walletController.createRazorpayOrder);
 router.post('/wallet/verify-payment', userAuth, walletController.verifyPayment);
 router.post('/wallet/withdraw-money', userAuth, walletController.withdrawMoney);
@@ -119,5 +122,6 @@ router.post('/requestReturn',userAuth,orderController.requestReturn)
 router.get('/wallet/balance',userAuth,walletController.getWalletBalance);
 router.post('/check-stock',userAuth, orderController.checkStock);
 router.get('/paymentFailure',userAuth,userController.paymentFailure)
-
+router.get('/wallet/get-balance',userAuth,walletController.getWalletBalance)
+router.get('/wallet/get-data',userAuth,walletController.getWalletData);
 module.exports=router;

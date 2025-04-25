@@ -23,7 +23,7 @@ const razorpay = new Razorpay({
         totalTransactions=wallet.transactions.length;
         transactions=wallet.transactions.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))
     }
-    res.render('wallet',{
+    res.render('walletprofile',{
         user:userData,
         wallet: wallet||{balance:0},
         transactions:transactions,
@@ -33,6 +33,45 @@ const razorpay = new Razorpay({
    console.error("error loading wallet",error)
    res.status(500).send("internal server error") 
 }
+}
+
+const getWallethistory=async(req,res)=>{
+  try {
+    const userId=req.session.user;
+    const userData=await User.findById(userId)
+    const wallet =await Wallet.findOne({userId:userId})
+     const limit=6;
+    const currentPage=parseInt(req.query.page)||1;
+    let startIndex=(currentPage-1)*limit;
+    let endIndex=startIndex+limit;
+    let transactions=[]
+    let totalTransactions=0;
+    let totalPages=0;
+    if (wallet) {
+   
+      const sortedTransactions = wallet.transactions.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+      
+      totalTransactions = sortedTransactions.length;
+      totalPages = Math.ceil(totalTransactions / limit);
+      transactions = sortedTransactions.slice(startIndex, endIndex);
+    }
+    res.render('wallethistory',{
+        user:userData,
+        wallet: wallet||{balance:0},
+        transactions:transactions,
+        currentPage,
+        totalPages,
+        totalTransactions
+    })
+
+  } catch (error) {
+   console.error("error loading wallet",error)
+   res.status(500).send("internal server error") 
+}
+
+
 }
 
 
@@ -197,11 +236,48 @@ try {
 }
 
 
+const getWalletData = async (req, res) => {
+  try {
+      const userId = req.session.user;
+      if (!userId) {
+          return res.status(401).json({
+              success: false,
+              message: "user not authenticated"
+          });
+      }
+
+      const wallet = await Wallet.findOne({ userId });
+      const transactions = wallet ? wallet.transactions.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
+
+      res.json({
+          success: true,
+          balance: wallet ? wallet.balance : 0,
+          transactions: transactions.map(t => ({
+              transactionId: t.transactionId,
+              amount: t.amount,
+              transactionType: t.transactionType,
+              transactionPurpose: t.transactionPurpose,
+              description: t.description,
+              createdAt: t.createdAt
+          }))
+      });
+  } catch (error) {
+      console.error('wallet data error', error);
+      res.status(500).json({
+          success: false,
+          message: 'error fetching wallet data',
+          error: process.env.NODE_ENV === 'development' ? error.message : null
+      });
+  }
+};
+
+
 module.exports={
     loadWallet,
     createRazorpayOrder,
     verifyPayment,
     withdrawMoney ,
-    getWalletBalance
-
+    getWalletBalance,
+    getWalletData,
+    getWallethistory
 }

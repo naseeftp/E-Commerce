@@ -87,8 +87,11 @@ const loadDashboard = async (req, res) => {
       'Shipped': 0,
       'Delivered': 0,
       'Cancelled': 0,
-      'Return Request': 0,
-      'Returned': 0
+      "Return Requested": 0,
+      "Return Approved": 0,
+      "Return Rejected": 0,
+     
+      
     };
 
     statusCounts.forEach(({ _id, count }) => {
@@ -99,13 +102,14 @@ const loadDashboard = async (req, res) => {
       labels: Object.keys(statusDistribution),
       counts: Object.values(statusDistribution),
       colors: [
-        '#FFCE56', 
-        '#36A2EB', 
-        '#FF6384', 
-        '#4BC0C0', 
-        '#FF9F40', 
-        '#9966FF', 
-        '#FF6B6B'  
+       "#FFCE56", 
+        "#36A2EB", 
+        "#FF6384",
+        "#4BC0C0", 
+        "#FF9F40", 
+        "#9966FF", 
+        "#00C4B4", 
+        "#FF6B6B", 
       ]
     };
 

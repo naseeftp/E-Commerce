@@ -424,7 +424,7 @@ body {
                <div class="tab-pane fade show active" id="dashboard" role="tabpanel" aria-labelledby="dashboard-tab">
                  <div class="card card-green">
                    <div class="card-header">
-                     <h5 class="mb-0 text-center">User Profile</h5>
+                     <h5 class="mb-0 text-center" style="color: white;">User Profile</h5>
                    </div>
                    <div class="card-body text-center">
                      <h5 class="card-title"><%=user.name%></h5>
@@ -434,6 +434,9 @@ body {
                      <p class="card-text">
                        <strong>Email:</strong><%=user.email%>
                      </p>
+                     <p class="card-text">
+                      <strong>referalcode:</strong><%=user.referralCode%>
+                    </p>
                      <a href="/change-email" class="btn btn-sm btn-success ml-2">Change Email</a>
                      <% if (!user.googleId) { %>
                       <a href="/updatePassword" class="btn btn-sm btn-success">Change Password</a>
@@ -457,7 +460,7 @@ body {
                    <div class="col-lg-6">
                      <div class="card mb-3 mb-lg-0">
                        <div class="card-header">
-                         <h5 class="mb-0"><%=address.addressType%></h5>
+                         <h5 class="mb-0" style="color: #ddd;"><%=address.addressType%></h5>
                        </div>
                         <div class="card-body">
                          <address>
@@ -509,7 +512,7 @@ body {
                <div class="tab-pane fade" id="orders" role="tabpanel" aria-labelledby="orders-tab">
                  <div class="card">
                    <div class="card-header">
-                     <h5 class="mb-0">Your Orders</h5>
+                     <h5 class="mb-0" style="color: #ddd;">Your Orders</h5>
                    </div>
                    <div class="card-body">
                      <div class="table-responsive">
@@ -670,6 +673,82 @@ body {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
+
+document.addEventListener('DOMContentLoaded', function() {
+    async function updateWalletData() {
+        try {
+            const response = await fetch('/wallet/get-data', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('availableBalance').textContent = result.balance.toFixed(2);
+
+                const tbody = document.querySelector('.transaction-table tbody');
+                tbody.innerHTML = ''; 
+
+                if (result.transactions.length > 0) {
+                    result.transactions.forEach(transaction => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>₹${transaction.amount.toFixed(2)}</td>
+                            <td>${transaction.transactionPurpose}</td>
+                            <td>${new Date(transaction.createdAt).toLocaleDateString()}</td>
+                            <td>
+                                ${transaction.transactionType === 'credit' ?
+                                    '<span style="color: green;">Credit</span>' :
+                                    '<span style="color: red;">Debit</span>'}
+                            </td>
+                        `;
+                        tbody.appendChild(row);
+                    });
+                } else {
+                    tbody.innerHTML = '<tr class="empty-transactions"><td colspan="4">No transactions found</td></tr>';
+                }
+            } else {
+                console.error('Failed to fetch wallet data:', result.message);
+            }
+        } catch (error) {
+            console.error('Error fetching wallet data:', error);
+        }
+    }
+
+    updateWalletData();
+
+    window.addEventListener('focus', updateWalletData);
+});
+
+
+document.addEventListener('DOMContentLoaded', function() {
+    async function updateWalletBalance() {
+        try {
+            const response = await fetch('/wallet/get-balance', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                document.getElementById('availableBalance').textContent = result.balance.toFixed(2);
+            } else {
+                console.error('Failed to fetch wallet balance:', result.message);
+            }
+        } catch (error) {
+            console.error('Error fetching wallet balance:', error);
+        }
+    }
+
+    updateWalletBalance();
+
+    window.addEventListener('focus', updateWalletBalance);
+})
+
 function setAmount(amount) {
     document.getElementById('amount').value = amount;
 }
@@ -757,7 +836,6 @@ document.getElementById('payButton').addEventListener('click', async () => {
         const rzp = new Razorpay(options);
         rzp.open();
         
-        // Close the modal after opening Razorpay
         const modal = bootstrap.Modal.getInstance(document.getElementById('addMoneyModal'));
         modal.hide();
     } catch (error) {
